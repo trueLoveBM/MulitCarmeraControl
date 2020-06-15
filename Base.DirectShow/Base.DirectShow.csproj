@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{ACBBF90F-49ED-4D2D-8159-C53E0D70B022}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Base.DirectShow</RootNamespace>
+    <AssemblyName>Base.DirectShow</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\AReleaseLib\PISRelease\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="GoldStandard.LogBase">
+      <HintPath>..\ImportDll\GoldStandard.LogBase.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DirectShow.cs" />
+    <Compile Include="DirectShowSimple.cs" />
+    <Compile Include="DShowNet\AMRenderExFlags.cs" />
+    <Compile Include="DShowNet\AxCore.cs" />
+    <Compile Include="DShowNet\AXExtend.cs" />
+    <Compile Include="DShowNet\CaptureGraphBuilder2.cs" />
+    <Compile Include="DShowNet\DsBugWO.cs" />
+    <Compile Include="DShowNet\DsControl.cs" />
+    <Compile Include="DShowNet\DsCore.cs" />
+    <Compile Include="DShowNet\DsDevice.cs" />
+    <Compile Include="DShowNet\DsDVD.cs" />
+    <Compile Include="DShowNet\DsError.cs" />
+    <Compile Include="DShowNet\DsExtend.cs" />
+    <Compile Include="DShowNet\DsUtils.cs" />
+    <Compile Include="DShowNet\DsUuids.cs" />
+    <Compile Include="DShowNet\DsVmr9.cs" />
+    <Compile Include="DShowNet\DsVmRender.cs" />
+    <Compile Include="DShowNet\EventCode.cs" />
+    <Compile Include="DShowNet\FilterGraph.cs" />
+    <Compile Include="DShowNet\IBindCtx.cs" />
+    <Compile Include="DShowNet\IConfigAsfWriter.cs" />
+    <Compile Include="DShowNet\IEnumString.cs" />
+    <Compile Include="DShowNet\IMoniker.cs" />
+    <Compile Include="DShowNet\IRunningObjectTable.cs" />
+    <Compile Include="DShowNet\Misc.cs" />
+    <Compile Include="DShowNet\OABool.cs" />
+    <Compile Include="DShowNet\QEdit.cs" />
+    <Compile Include="DShowNet\SampleGrabber.cs" />
+    <Compile Include="DShowNet\WindowStyle.cs" />
+    <Compile Include="Entity\DeviceSecEntity.cs" />
+    <Compile Include="Entity\VideoSettingEntity.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SharePreferences\CameraUtils.cs" />
+    <Compile Include="SharePreferences\ResolutionUtils.cs" />
+    <Compile Include="SharePreferences\VideoSettingUtils.cs" />
+    <Compile Include="Utils\Base64Helper.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -115,7 +115,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\ZDTBase\Base.DirectShow\Base.DirectShow.csproj">
+    <ProjectReference Include="..\Base.DirectShow\Base.DirectShow.csproj">
       <Project>{acbbf90f-49ed-4d2d-8159-c53e0d70b022}</Project>
       <Name>Base.DirectShow</Name>
     </ProjectReference>

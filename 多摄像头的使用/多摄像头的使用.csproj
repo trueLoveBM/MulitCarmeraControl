@@ -52,6 +52,12 @@
     <Compile Include="加载一个摄像头.Designer.cs">
       <DependentUpon>加载一个摄像头.cs</DependentUpon>
     </Compile>
+    <Compile Include="加载两个摄像头.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="加载两个摄像头.Designer.cs">
+      <DependentUpon>加载两个摄像头.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -64,6 +70,9 @@
     <EmbeddedResource Include="加载一个摄像头.resx">
       <DependentUpon>加载一个摄像头.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="加载两个摄像头.resx">
+      <DependentUpon>加载两个摄像头.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -73,6 +82,12 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Base.DirectShow\Base.DirectShow.csproj">
+      <Project>{acbbf90f-49ed-4d2d-8159-c53e0d70b022}</Project>
+      <Name>Base.DirectShow</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

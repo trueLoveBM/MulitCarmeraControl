@@ -82,6 +82,8 @@
     <Compile Include="SharePreferences\CameraUtils.cs" />
     <Compile Include="SharePreferences\ResolutionUtils.cs" />
     <Compile Include="SharePreferences\VideoSettingUtils.cs" />
+    <Compile Include="TestManager.cs" />
+    <Compile Include="TestMulitCamera.cs" />
     <Compile Include="Utils\Base64Helper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

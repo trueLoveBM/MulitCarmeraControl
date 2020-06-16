@@ -15,7 +15,7 @@ namespace 多摄像头的使用
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new 加载一个摄像头());
+            Application.Run(new 加载两个摄像头());
         }
     }
 }

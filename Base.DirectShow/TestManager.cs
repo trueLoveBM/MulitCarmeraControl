@@ -139,7 +139,7 @@ namespace Base.DirectShow
             else
             {
                 var BindCamera = XmlHelper.XmlHelper.FindByPrimaryKey<CameraEntity>(bindInfoEntity.CameraName);
-                var BindAudio = XmlHelper.XmlHelper.FindByPrimaryKey<AudioEntity>(bindInfoEntity.CameraName);
+                var BindAudio = XmlHelper.XmlHelper.FindByPrimaryKey<AudioEntity>(bindInfoEntity.AudioName);
 
                 if (BindCamera.Status == 3 || BindAudio.Status == 3)
                 {

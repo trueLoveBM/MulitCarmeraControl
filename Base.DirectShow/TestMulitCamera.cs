@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -34,7 +36,7 @@ namespace Base.DirectShow
         /// <summary>
         /// 选择视频压缩器
         /// </summary>
-        IBaseFilter _theDeviceCompressor = null;
+        IBaseFilter _theCameraCompressor = null;
 
         /// <summary>
         /// 选择摄像头 
@@ -45,8 +47,6 @@ namespace Base.DirectShow
         /// 选择声音压缩器
         /// </summary>
         IBaseFilter _theAudioCompressor = null;
-
-
 
         private int _Frames;
         /// <summary>
@@ -73,7 +73,6 @@ namespace Base.DirectShow
         /// </summary>
         IFilterGraph2 _graphBuilder = null;
 
-
         /// <summary>
         /// capture graph builder interface.捕捉图表构建器接口
         /// </summary>
@@ -85,19 +84,16 @@ namespace Base.DirectShow
         /// </summary>
         IMediaControl _mediaControl = null;
 
-
         /// <summary>
         /// samp Grabber interface 采样器接口
         /// </summary>
         ISampleGrabber sampleGrabber = null;
 
-
-
+        private string sVideoType = "wmv";//录制视频格式
         private int _VideoWidth;//视频宽度
         private int _VideoHeight;//视频高度
         private int _VideoBitCount;//视频比特
         private int _ImageSize;//图片大小
-
 
         /// <summary>
         /// TODO
@@ -108,7 +104,6 @@ namespace Base.DirectShow
         /// TODO
         /// </summary>
         private volatile bool m_bWantOneFrame = false;
-
 
         /// <summary>
         /// TODO
@@ -134,7 +129,6 @@ namespace Base.DirectShow
         IFileSinkFilter sink;
         #endregion
 
-
         #region APIs
         [DllImport("Kernel32.dll", EntryPoint = "RtlMoveMemory")]
         private static extern void CopyMemory(IntPtr Destination, IntPtr Source, [MarshalAs(UnmanagedType.U4)] int Length);
@@ -149,6 +143,30 @@ namespace Base.DirectShow
             [In, MarshalAs(UnmanagedType.Interface)] ref object ppUnk,
             int cPages, IntPtr pPageClsID, int lcid, int dwReserved, IntPtr pvReserved);
         #endregion
+
+        #region 参数设置
+
+        /// <summary>
+        /// 设置使用摄像头
+        /// </summary>
+        /// <param name="CameraName"></param>
+        public void BindCamera(string CameraName)
+        {
+            this._bindCameraName = CameraName;
+        }
+
+        /// <summary>
+        /// 设置使用的音频
+        /// </summary>
+        /// <param name="AudioName"></param>
+        public void BindAudio(string AudioName)
+        {
+            this._bindAudioName = AudioName;
+        }
+
+        #endregion
+
+        #region 接口实现
 
         /// <summary>
         ///  ISampleGrabberCB接口  未使用
@@ -186,11 +204,17 @@ namespace Base.DirectShow
             return 0;
         }
 
+        #endregion
+
+        #region 预览摄像头
 
         /// <summary>
         /// 预览视频
         /// </summary>
-        /// <param name="clVideo">视频显示的控件对象</param>
+        /// <param name="PriviewControlHandle">预览控件的句柄</param>
+        /// <param name="PriviewControlWidth">预览宽度</param>
+        /// <param name="PriviewControlHeight">预览高度</param>
+        /// <returns></returns>
         public bool Preview(IntPtr PriviewControlHandle, int PriviewControlWidth, int PriviewControlHeight)
         {
             if (!InitDevice())//初始化设备
@@ -209,29 +233,181 @@ namespace Base.DirectShow
             return StartRun();
         }
 
+        #endregion
+
+        #region 录像
 
         /// <summary>
-        /// 设置使用摄像头
+        /// 开始录制
         /// </summary>
-        /// <param name="CameraName"></param>
-        public void BindCamera(string CameraName)
+        public bool StartMonitorRecord(string sViewPath)
         {
-            this._bindCameraName = CameraName;
+            if (!InitGraph(sViewPath))
+            {
+                return false;
+            }
+            return StartRun();
         }
+
+      
+
 
         /// <summary>
-        /// 设置使用的音频
+        /// 停止录制
         /// </summary>
-        /// <param name="AudioName"></param>
-        public void BindAudio(string AudioName)
+        public void StopMonitorRecord()
         {
-            this._bindAudioName = AudioName;
+            if (!VerStarPreview())
+            {
+                MessageBox.Show("请先开始预览！");
+                return;
+            }
+            StopRun();
+            SetVideoShow(_Resolution, _Frames);
+            StartRun();
+        }
+        #endregion
+
+        #region 获取当前帧，拍照
+
+        /// <summary>
+        /// 抓拍照片
+        /// </summary>
+        /// <param name="SavePath">抓拍照片完整路径，包含文件名</param>
+        /// <param name="iImageWidth">抓拍图片宽度，默认获取视频信息宽度</param>
+        /// <param name="iImageHeight">抓拍图片高度，默认获取视频信息高度</param>
+        /// <param name="bSamll">是否抓小图，默认不抓拍</param>
+        /// <param name="samllPath">抓拍小图保存路径，抓拍小图时则必须填写</param>
+        public bool CameraShot(string SavePath, int iImageWidth = 0, int iImageHeight = 0, bool bSamll = false, string samllPath = "")
+        {
+            if (string.IsNullOrEmpty(SavePath))
+            {
+                MessageBox.Show("请输入抓拍照片保存路径！");
+                return false;
+            }
+            if (bSamll && string.IsNullOrEmpty(samllPath))
+            {
+                MessageBox.Show("请输入抓拍小照片完整路径！");
+                return false;
+            }
+            if (!VerStarPreview())
+            {
+                MessageBox.Show("请先开始预览！");
+                return false;
+            }
+            IntPtr ip = GetNextFrame();
+            int iCapWidth = 0; int iCapHeight = 0;
+            if (iImageWidth == 0 && iImageHeight == 0)
+            {
+                iCapWidth = _VideoWidth;
+                iCapHeight = _VideoHeight;
+            }
+            else
+            {
+                iCapWidth = iImageWidth;
+                iCapHeight = iImageHeight;
+            }
+            if (((iCapWidth & 0x03) != 0) || (iCapWidth < 32) || (iCapWidth > 4096) || (iCapHeight < 32) || (iCapHeight > 4096))
+            {
+                MessageBox.Show("输入的宽度或高度必须在32到4096之间");
+                return false;
+            }
+            Bitmap bitmap = new Bitmap(iCapWidth, iCapHeight, (_VideoBitCount / 8) * iCapWidth, PixelFormat.Format24bppRgb, ip);
+
+            Bitmap bitmap_clone = bitmap.Clone(new Rectangle(0, 0, _VideoWidth, _VideoHeight), PixelFormat.Format24bppRgb);
+            bitmap_clone.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
+            // Release any previous buffer
+            if (ip != IntPtr.Zero)
+            {
+                Marshal.FreeCoTaskMem(ip);
+                ip = IntPtr.Zero;
+            }
+            bitmap.Dispose();
+            bitmap = null;
+            bitmap_clone.Save(SavePath, ImageFormat.Jpeg);
+            if (bSamll)
+            {
+                Image.GetThumbnailImageAbort myCallback = new Image.GetThumbnailImageAbort(() => { return false; });
+                Image myThumbnail = bitmap_clone.GetThumbnailImage(120, 120, myCallback, IntPtr.Zero);
+                myThumbnail.Save(samllPath);
+            }
+            return true;
         }
 
+        #endregion
+
+        #region 公开方法
+
+        /// <summary>
+        /// 获取当前使用的摄像头支持的所有分辨率
+        /// </summary>
+        /// <returns></returns>
+        public List<string> GetCameraSupportResolution()
+        {
+            if (_theCamera == null || _captureGraphBuilder == null)
+                return null;
+
+            List<string> AvailableResolutions = new List<string>();
+            object streamConfig;
+
+            // 获取配置接口
+            int hr = _captureGraphBuilder.FindInterface(PinCategory.Capture,
+                                             MediaType.Video,
+                                             _theCamera,
+                                             typeof(IAMStreamConfig).GUID,
+                                             out streamConfig);
+
+            Marshal.ThrowExceptionForHR(hr);
+
+            var videoStreamConfig = streamConfig as IAMStreamConfig;
+
+
+            if (videoStreamConfig == null)
+            {
+                throw new Exception("Failed to get IAMStreamConfig");
+            }
+            var videoInfo = new VideoInfoHeader();
+            int iCount;
+            int iSize;
+            int bitCount = 0;
+            //IAMStreamConfig::GetNumberOfCapabilities获得设备所支持的媒体类型的数量。这个方法返回两个值，一个是媒体类型的数量，二是属性所需结构的大小。
+            hr = videoStreamConfig.GetNumberOfCapabilities(out iCount, out iSize);
+            Marshal.ThrowExceptionForHR(hr);
+            IntPtr TaskMemPointer = Marshal.AllocCoTaskMem(iSize);
+            AMMediaType pmtConfig = null;
+
+            for (int iFormat = 0; iFormat < iCount; iFormat++)
+            {
+                IntPtr ptr = IntPtr.Zero;
+                //通过函数IAMStreamConfig::GetStreamCaps来枚举媒体类型，要给这个函数传递一个序号作为参数，这个函数返回媒体类型和相应的属性结构体
+                videoStreamConfig.GetStreamCaps(iFormat, out ptr, TaskMemPointer);
+
+                pmtConfig = (AMMediaType)Marshal.PtrToStructure(ptr, typeof(AMMediaType));
+
+                videoInfo = (VideoInfoHeader)Marshal.PtrToStructure(pmtConfig.formatPtr, typeof(VideoInfoHeader));
+
+                if (videoInfo.BmiHeader.Size != 0 && videoInfo.BmiHeader.BitCount != 0)
+                {
+                    if (videoInfo.BmiHeader.BitCount > bitCount)
+                    {
+                        AvailableResolutions.Clear();
+                        bitCount = videoInfo.BmiHeader.BitCount;
+                    }
+                    AvailableResolutions.Add(videoInfo.BmiHeader.Width + "*" + videoInfo.BmiHeader.Height);
+                }
+            }
+
+            return AvailableResolutions;
+
+        }
+        #endregion
+
+        #region 私有方法
         /// <summary>
         /// 停止播放
         /// </summary>
-        internal void StopRun()
+        private void StopRun()
         {
             if (_mediaControl != null)
             {
@@ -254,7 +430,7 @@ namespace Base.DirectShow
         /// <summary>
         /// 开始运行
         /// </summary>
-        internal bool StartRun()
+        private bool StartRun()
         {
             if (_mediaControl == null)
             {
@@ -276,7 +452,7 @@ namespace Base.DirectShow
         /// <summary>
         ///设置视频显示
         /// </summary>
-        internal void SetVideoShow(string Resolution, int Frames)
+        private void SetVideoShow(string Resolution, int Frames)
         {
             if (_theCamera == null)
             {
@@ -344,7 +520,7 @@ namespace Base.DirectShow
         /// <summary>
         /// 构建捕获图
         /// </summary>
-        internal void CreateGraph(string Resolution, int Frames)
+        private void CreateGraph(string Resolution, int Frames)
         {
             if (_graphBuilder != null)
             {
@@ -361,9 +537,9 @@ namespace Base.DirectShow
             DsError.ThrowExceptionForHR(hr);
 
             //将视频压缩器过滤器添加到图形
-            if (_theDeviceCompressor != null)
+            if (_theCameraCompressor != null)
             {
-                hr = _graphBuilder.AddFilter(_theDeviceCompressor, "devicecompressor filter");
+                hr = _graphBuilder.AddFilter(_theCameraCompressor, "devicecompressor filter");
                 DsError.ThrowExceptionForHR(hr);
             }
             //将音频输入设备添加到图形
@@ -457,77 +633,14 @@ namespace Base.DirectShow
         }
 
         /// <summary>
-        /// 获取当前使用的摄像头支持的所有分辨率
-        /// </summary>
-        /// <returns></returns>
-        internal List<string> GetCameraSupportResolution()
-        {
-            if (_theCamera == null || _captureGraphBuilder == null)
-                return null;
-
-            List<string> AvailableResolutions = new List<string>();
-            object streamConfig;
-
-            // 获取配置接口
-            int hr = _captureGraphBuilder.FindInterface(PinCategory.Capture,
-                                             MediaType.Video,
-                                             _theCamera,
-                                             typeof(IAMStreamConfig).GUID,
-                                             out streamConfig);
-
-            Marshal.ThrowExceptionForHR(hr);
-
-            var videoStreamConfig = streamConfig as IAMStreamConfig;
-
-
-            if (videoStreamConfig == null)
-            {
-                throw new Exception("Failed to get IAMStreamConfig");
-            }
-            var videoInfo = new VideoInfoHeader();
-            int iCount;
-            int iSize;
-            int bitCount = 0;
-            //IAMStreamConfig::GetNumberOfCapabilities获得设备所支持的媒体类型的数量。这个方法返回两个值，一个是媒体类型的数量，二是属性所需结构的大小。
-            hr = videoStreamConfig.GetNumberOfCapabilities(out iCount, out iSize);
-            Marshal.ThrowExceptionForHR(hr);
-            IntPtr TaskMemPointer = Marshal.AllocCoTaskMem(iSize);
-            AMMediaType pmtConfig = null;
-
-            for (int iFormat = 0; iFormat < iCount; iFormat++)
-            {
-                IntPtr ptr = IntPtr.Zero;
-                //通过函数IAMStreamConfig::GetStreamCaps来枚举媒体类型，要给这个函数传递一个序号作为参数，这个函数返回媒体类型和相应的属性结构体
-                videoStreamConfig.GetStreamCaps(iFormat, out ptr, TaskMemPointer);
-
-                pmtConfig = (AMMediaType)Marshal.PtrToStructure(ptr, typeof(AMMediaType));
-
-                videoInfo = (VideoInfoHeader)Marshal.PtrToStructure(pmtConfig.formatPtr, typeof(VideoInfoHeader));
-
-                if (videoInfo.BmiHeader.Size != 0 && videoInfo.BmiHeader.BitCount != 0)
-                {
-                    if (videoInfo.BmiHeader.BitCount > bitCount)
-                    {
-                        AvailableResolutions.Clear();
-                        bitCount = videoInfo.BmiHeader.BitCount;
-                    }
-                    AvailableResolutions.Add(videoInfo.BmiHeader.Width + "*" + videoInfo.BmiHeader.Height);
-                }
-            }
-
-            return AvailableResolutions;
-
-        }
-
-        /// <summary>
         /// 初始化设备
         /// </summary>
-        internal bool InitDevice()
+        private bool InitDevice()
         {
             try
             {
                 //检查DirectX版本
-                if (!IsCorrectDirectXVersion())
+                if (!TestManager.IsCorrectDirectXVersion())
                 {
                     throw new Exception("未安装DirectX 8.1！");
                 }
@@ -547,7 +660,7 @@ namespace Base.DirectShow
 
                 var dsVideoDevice = TestManager.GetAllVideoDevice();
 
-                _theCamera = CreateFilter(dsVideoDevice, _bindCameraName);
+                _theCamera = TestManager.CreateFilter(dsVideoDevice, _bindCameraName);
                 if (_theCamera == null)
                 {
                     MessageBox.Show("输入摄像机名称不存在！");
@@ -555,7 +668,7 @@ namespace Base.DirectShow
 
 
                 var dsAudioDevice = TestManager.GetAllAudioDevice();
-                _theAudio = CreateFilter(dsAudioDevice, _bindAudioName);//获取音频设备IBaseFilter
+                _theAudio = TestManager.CreateFilter(dsAudioDevice, _bindAudioName);//获取音频设备IBaseFilter
                 if (_theAudio == null)
                 {
                     MessageBox.Show("输入音频设备不存在！");
@@ -570,53 +683,100 @@ namespace Base.DirectShow
         }
 
         /// <summary>
-        /// 验证是否安装DirectX
+        /// 验证是否开始预览
         /// </summary>
         /// <returns></returns>
-        internal bool IsCorrectDirectXVersion()
+        private bool VerStarPreview()
         {
-            return File.Exists(Path.Combine(Environment.SystemDirectory, "dpnhpast.dll"));
+            if (_theCamera == null || _theAudio == null)
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
-        /// 根据设备集合、设备名称获取指定设备的BaseFilter
+        /// 获取视频下一帧
         /// </summary>
-        /// <param name="dsDevice">设备集合</param>
-        /// <param name="friendlyname">设备名</param>
         /// <returns></returns>
-        private IBaseFilter CreateFilter(DsDevice[] dsDevice, string friendlyname)
+        private IntPtr GetNextFrame()
         {
-            if (dsDevice == null || dsDevice.Length == 0)
+            // get ready to wait for new image
+            m_PictureReady.Reset();
+            m_ipBuffer = Marshal.AllocCoTaskMem(Math.Abs(_VideoBitCount / 8 * _VideoWidth) * _VideoHeight);
+            try
             {
-                return null;
-            }
-            object source = null;
-            Guid gbf = typeof(IBaseFilter).GUID;
-            if (string.IsNullOrEmpty(friendlyname))//如果名字为空则默认第一个
-            {
-                dsDevice[0].Mon.BindToObject(null, null, ref gbf, out source);
-                return (IBaseFilter)source;
-            }
-            bool blExis = false;//是否存在
-            foreach (DsDevice device in dsDevice)
-            {
-                if (device.Name.Equals(friendlyname))
+                m_bWantOneFrame = true;
+                if (!m_PictureReady.WaitOne(5000, false))// 开始等待
                 {
-                    blExis = true;
-                    device.Mon.BindToObject(null, null, ref gbf, out source);
-                    break;
+                    throw new Exception("获取图片超时");
                 }
             }
-            if (blExis)
+            catch
             {
-                return (IBaseFilter)source;
+                Marshal.FreeCoTaskMem(m_ipBuffer);
+                m_ipBuffer = IntPtr.Zero;
+                throw;
             }
-            else
-            {
-                return null;
-            }
+            // 返回图片
+            return m_ipBuffer;
         }
 
+        /// <summary>
+        /// 初始化图表
+        /// </summary>
+        private bool InitGraph(string sViewPath)
+        {
+            if (!VerStarPreview())
+            {
+                MessageBox.Show("请先开始预览！");
+                return false;
+            }
+            _mediaControl.Stop();
+            CreateGraph(_Resolution, _Frames);
+            int hr;
+            if (sVideoType == "wmv")
+            {
+                hr = _captureGraphBuilder.SetOutputFileName(MediaSubType.Asf, sViewPath, out mux, out sink);
+                Marshal.ThrowExceptionForHR(hr);
+                try
+                {
+                    IConfigAsfWriter lConfig = mux as IConfigAsfWriter;
+
+                    // Windows Media Video (audio, 700 Kbps)
+                    // READ THE README for info about using guids
+                    Guid cat = new Guid("ec298949-639b-45e2-96fd-4ab32d5919c2");
+                    hr = lConfig.ConfigureFilterUsingProfileGuid(cat);
+                    Marshal.ThrowExceptionForHR(hr);
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(sink);
+                }
+            }
+            else if (sVideoType == "avi")
+            {
+                hr = _captureGraphBuilder.SetOutputFileName(MediaSubType.Avi, sViewPath, out mux, out sink);
+                DsError.ThrowExceptionForHR(hr);
+            }
+            //将设备和压缩器连接到mux，以呈现图形的捕获部分
+            hr = _captureGraphBuilder.RenderStream(PinCategory.Capture, MediaType.Interleaved, _theCamera, _theCameraCompressor, mux);
+            //DsError.ThrowExceptionForHR(hr);
+            if (hr < 0)
+            {
+                hr = _captureGraphBuilder.RenderStream(PinCategory.Capture, MediaType.Video, _theCamera, _theCameraCompressor, mux);
+                if (hr < 0) { DsError.ThrowExceptionForHR(hr); }
+            }
+
+            //将音频添加进去
+            hr = _captureGraphBuilder.RenderStream(PinCategory.Capture, MediaType.Audio, _theAudio, _theAudioCompressor, mux);
+            DsError.ThrowExceptionForHR(hr);
+
+            Marshal.ReleaseComObject(mux);
+            Marshal.ReleaseComObject(sink);
+            return true;
+        }
+        #endregion
 
         #region 关闭视频设备
         /// <summary>
@@ -649,10 +809,10 @@ namespace Base.DirectShow
                 Marshal.ReleaseComObject(_theCamera);
                 _theCamera = null;
             }
-            if (_theDeviceCompressor != null)
+            if (_theCameraCompressor != null)
             {
-                Marshal.ReleaseComObject(_theDeviceCompressor);
-                _theDeviceCompressor = null;
+                Marshal.ReleaseComObject(_theCameraCompressor);
+                _theCameraCompressor = null;
             }
             if (_theAudio != null)
             {

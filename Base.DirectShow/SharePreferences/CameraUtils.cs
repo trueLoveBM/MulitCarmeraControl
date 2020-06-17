@@ -12,7 +12,6 @@ namespace Base.DirectShow.SharePreferences
     public class CameraUtils
     {
 
-
         #region 私有成员变量
 
         /// <summary>
@@ -30,7 +29,6 @@ namespace Base.DirectShow.SharePreferences
         /// </summary>
         private string _CameraHistoryRealPath;
         #endregion
-
 
         #region 单例
         private static Lazy<CameraUtils> lazy = new Lazy<CameraUtils>(() => { return new CameraUtils(); });
@@ -59,7 +57,6 @@ namespace Base.DirectShow.SharePreferences
             _CameraHistoryRealPath = System.Environment.CurrentDirectory + "/" + _CameraHistoryFilePath + "/" + _CameraHistoryFileName;
         }
         #endregion
-
 
         /// <summary>
         /// 获取用户上次使用的分辨率

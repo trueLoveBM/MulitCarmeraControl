@@ -122,7 +122,7 @@ namespace 多摄像头的使用
 
         private void btnOleSetting_Click(object sender, EventArgs e)
         {
-            _camera1.ChangeCameraSetting(this.Handle);
+            _camera1.ChangeCameraSetting();
         }
 
         private void btnSavePlan_Click(object sender, EventArgs e)

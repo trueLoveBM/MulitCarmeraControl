@@ -58,6 +58,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UcCamera.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UcCamera.Designer.cs">
+      <DependentUpon>UcCamera.cs</DependentUpon>
+    </Compile>
     <Compile Include="加载一个摄像头.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -69,6 +75,12 @@
     </Compile>
     <Compile Include="加载两个摄像头.Designer.cs">
       <DependentUpon>加载两个摄像头.cs</DependentUpon>
+    </Compile>
+    <Compile Include="动态添加摄像头.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="动态添加摄像头.Designer.cs">
+      <DependentUpon>动态添加摄像头.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="FrmInputPlanName.resx">
       <DependentUpon>FrmInputPlanName.cs</DependentUpon>
@@ -85,11 +97,17 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="UcCamera.resx">
+      <DependentUpon>UcCamera.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="加载一个摄像头.resx">
       <DependentUpon>加载一个摄像头.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="加载两个摄像头.resx">
       <DependentUpon>加载两个摄像头.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="动态添加摄像头.resx">
+      <DependentUpon>动态添加摄像头.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

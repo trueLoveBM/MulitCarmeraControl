@@ -433,7 +433,7 @@ namespace Base.DirectShow
         /// 打开摄像头配置页面
         /// 系统原生方式
         /// </summary>
-        public void ChangeCameraSetting(IntPtr FrmHandle)
+        public void ChangeCameraSetting()
         {
             DsCAUUID cauuid = new DsCAUUID();
             try
@@ -450,7 +450,7 @@ namespace Base.DirectShow
 
                 object o = specifyPropertyPages;
                 //获取属性页
-                hr = OleCreatePropertyFrame(FrmHandle, 30, 30, null, 1,
+                hr = OleCreatePropertyFrame(this._priviewControlHandle, 30, 30, null, 1,
                     ref o, cauuid.cElems, cauuid.pElems, 0, 0, IntPtr.Zero);
 
             }
@@ -515,7 +515,17 @@ namespace Base.DirectShow
             setting.BacklightCompensation = BacklightCompensation;
             setting.Gain = Gain;
             setting.DefaultSetting = AsDefault;
-            setting.Save();
+
+            if (AsDefault)
+            {
+                List<CameraParamPlanEntity> list = XmlHelper.XmlHelper.FindAll<CameraParamPlanEntity>();
+                if (list == null) list = new List<CameraParamPlanEntity>();
+                list.ForEach(m => m.DefaultSetting = false);
+                list.Add(setting);
+                XmlHelper.XmlHelper.SaveList<CameraParamPlanEntity>(list);
+            }
+            else
+                setting.Save();
 
             return true;
         }

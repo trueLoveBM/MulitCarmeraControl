@@ -35,6 +35,7 @@
             this.menuPlan = new System.Windows.Forms.ToolStripMenuItem();
             this.menuChangeSetting = new System.Windows.Forms.ToolStripMenuItem();
             this.menu_savePlan = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuCamera = new System.Windows.Forms.ToolStripMenuItem();
             this.ctxRight.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -44,10 +45,11 @@
             this.menuResolution,
             this.menuPlan,
             this.menuChangeSetting,
-            this.menu_savePlan});
+            this.menu_savePlan,
+            this.menuCamera});
             this.ctxRight.Name = "ctxRight";
             this.ctxRight.ShowCheckMargin = true;
-            this.ctxRight.Size = new System.Drawing.Size(203, 114);
+            this.ctxRight.Size = new System.Drawing.Size(203, 136);
             // 
             // menuResolution
             // 
@@ -83,6 +85,12 @@
             this.menu_savePlan.Text = "保存方案";
             this.menu_savePlan.Click += new System.EventHandler(this.menu_savePlan_Click);
             // 
+            // menuCamera
+            // 
+            this.menuCamera.Name = "menuCamera";
+            this.menuCamera.Size = new System.Drawing.Size(202, 22);
+            this.menuCamera.Text = "摄像头";
+            // 
             // UcCamera
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -106,5 +114,6 @@
         private System.Windows.Forms.ToolStripMenuItem menuPlan;
         private System.Windows.Forms.ToolStripMenuItem menuChangeSetting;
         private System.Windows.Forms.ToolStripMenuItem menu_savePlan;
+        private System.Windows.Forms.ToolStripMenuItem menuCamera;
     }
 }

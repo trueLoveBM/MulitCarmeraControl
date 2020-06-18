@@ -370,5 +370,14 @@ namespace Base.DirectShow
 
             return AvailableResolutions;
         }
+
+        /// <summary>
+        /// 获取当前的摄像头信息
+        /// </summary>
+        /// <returns></returns>
+        public static List<CameraEntity> GetCameras()
+        {
+            return XmlHelper.XmlHelper.FindAll<CameraEntity>();
+        }
     }
 }

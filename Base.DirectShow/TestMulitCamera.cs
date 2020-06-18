@@ -25,6 +25,11 @@ namespace Base.DirectShow
         /// </summary>
         public string Resolution { get { return this._Resolution; } }
 
+        /// <summary>
+        /// 当前使用的摄像头
+        /// </summary>
+        public string Camera { get { return this._bindCameraName; } }
+
         #endregion
 
         #region  字段
@@ -162,6 +167,11 @@ namespace Base.DirectShow
         public void BindCamera(string CameraName)
         {
             this._bindCameraName = CameraName;
+
+            if (VerStarPreview())
+            {
+                this.Preview(this._priviewControlHandle, this._priviewControlWidth, this._priviewControlHeigh);
+            }
         }
 
         /// <summary>

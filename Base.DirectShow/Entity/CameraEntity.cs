@@ -31,5 +31,19 @@ namespace Base.DirectShow.Entity
         /// 3:不可用
         /// </summary>
         public int Status { get; set; }
+
+
+        public override string ToString()
+        {
+            string stuff = "";
+            switch (Status)
+            {
+                case 0: stuff = "(空闲)"; break;
+                case 1: stuff = "(已被占用)"; break;
+                case 2: stuff = "(禁用)"; break;
+                case 3: stuff = "(不可用)"; break;
+            }
+            return Name + stuff;
+        }
     }
 }

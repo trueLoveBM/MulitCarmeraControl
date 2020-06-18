@@ -64,6 +64,84 @@ namespace 多摄像头的使用
             }
 
 
+            //获取摄像头
+            List<CameraEntity> cameras = TestManager.GetCameras();
+            if (cameras == null || cameras.Count == 0)
+            {
+                menuCamera.Visible = false;
+            }
+            else
+            {
+                menuCamera.DropDownItems.Clear();
+                for (int i = 0; i < cameras.Count; i++)
+                {
+                    var item = cameras[i];
+                    ToolStripMenuItem s_item = new ToolStripMenuItem();
+                    s_item.Name = item.Name;
+
+                    s_item.CheckOnClick = true;
+                    s_item.Tag = item;
+                    s_item.Checked = item.Name == camera.Camera;
+
+                    if (s_item.Checked)
+                        s_item.Text = item.Name + "(使用中)";
+                    else
+                        s_item.Text = item.ToString();
+
+
+                    s_item.CheckedChanged += camera_CheckChanged;
+                    s_item.Enabled = item.Status == 0;
+                    menuCamera.DropDownItems.Add(s_item);
+                }
+            }
+
+
+        }
+
+        /// <summary>
+        /// 摄像头的选择改变事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void camera_CheckChanged(object sender, EventArgs e)
+        {
+
+            ToolStripMenuItem menu_item = sender as ToolStripMenuItem;
+            CameraEntity cameraEntity = menu_item.Tag as CameraEntity;
+            camera.BindCamera(cameraEntity.Name);
+
+
+            //刷新
+            //获取摄像头
+            List<CameraEntity> cameras = TestManager.GetCameras();
+            if (cameras == null || cameras.Count == 0)
+            {
+                menuCamera.Visible = false;
+            }
+            else
+            {
+                menuCamera.DropDownItems.Clear();
+                for (int i = 0; i < cameras.Count; i++)
+                {
+                    var item = cameras[i];
+                    ToolStripMenuItem s_item = new ToolStripMenuItem();
+                    s_item.Name = item.Name;
+
+                    s_item.CheckOnClick = true;
+                    s_item.Tag = item;
+                    s_item.Checked = item.Name == camera.Camera;
+
+                    if (s_item.Checked)
+                        s_item.Text = item.Name + "(使用中)";
+                    else
+                        s_item.Text = item.ToString();
+
+
+                    s_item.CheckedChanged += camera_CheckChanged;
+                    s_item.Enabled = item.Status == 0;
+                    menuCamera.DropDownItems.Add(s_item);
+                }
+            }
         }
 
         /// <summary>

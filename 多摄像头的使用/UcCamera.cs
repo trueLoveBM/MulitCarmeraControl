@@ -67,7 +67,7 @@ namespace 多摄像头的使用
 
         public void closeCamera()
         {
-            camera.Dispose();
+            camera?.Dispose();
         }
 
         private void UcCamera_VisibleChanged(object sender, EventArgs e)
@@ -166,7 +166,7 @@ namespace 多摄像头的使用
 
 
                     s_item.CheckedChanged += camera_CheckChanged;
-                    s_item.Enabled = item.Status == 0;
+                    s_item.Enabled = item.Status == 0 || s_item.Checked;
                     menuCamera.DropDownItems.Add(s_item);
                 }
             }

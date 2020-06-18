@@ -169,18 +169,29 @@ namespace Base.DirectShow
         /// <param name="CameraName"></param>
         public void BindCamera(string CameraName)
         {
-            var cameras = XmlHelper.XmlHelper.FindAll<CameraEntity>();
-            var oldc = cameras.Find(m => m.Name == this._bindCameraName);
-            oldc.Status = 0;
-            var newc = cameras.Find(m => m.Name == CameraName);
-            newc.Status = 1;
-            XmlHelper.XmlHelper.SaveList<CameraEntity>(cameras);
+            if (VerStarPreview())
+            {
+                var cameras = XmlHelper.XmlHelper.FindAll<CameraEntity>();
+                if (cameras?.Count > 0)
+                {
+                    var oldc = cameras.Find(m => m.Name == this._bindCameraName);
+                    if (oldc != null)
+                        oldc.Status = 0;
+                    var newc = cameras.Find(m => m.Name == CameraName);
+                    if (newc != null)
+                        newc.Status = 1;
+                    XmlHelper.XmlHelper.SaveList<CameraEntity>(cameras);
+                }
 
 
-            BindInfoEntity bindInfo = XmlHelper.XmlHelper.FindByPrimaryKey<BindInfoEntity>(this.BindInfoKey);
-            bindInfo.CameraName = CameraName;
-            //TODO
-            bindInfo.Save();
+                BindInfoEntity bindInfo = XmlHelper.XmlHelper.FindByPrimaryKey<BindInfoEntity>(this.BindInfoKey);
+                if (bindInfo != null)
+                {
+                    bindInfo.CameraName = CameraName;
+                    //TODO
+                    bindInfo.Save();
+                }
+            }
 
             this._bindCameraName = CameraName;
 

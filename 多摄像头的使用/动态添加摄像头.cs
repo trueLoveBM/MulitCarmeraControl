@@ -33,7 +33,7 @@ namespace 多摄像头的使用
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message+"\r\n"+ex.StackTrace);
 
                 if (ucCamera != null)
                 {

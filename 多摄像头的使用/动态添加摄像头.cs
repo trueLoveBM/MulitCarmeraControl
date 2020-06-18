@@ -23,17 +23,26 @@ namespace 多摄像头的使用
         /// <param name="e"></param>
         private void btnAdd_Click(object sender, EventArgs e)
         {
+            UcCamera ucCamera = null;
             try
             {
-                UcCamera ucCamera = new UcCamera();
+                ucCamera = new UcCamera();
                 ucCamera.Name = "camara" + fpContent.Controls.Count;
                 fpContent.Controls.Add(ucCamera);
                 ucCamera.showCamera();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+
+                if (ucCamera != null)
+                {
+                    fpContent.Controls.Remove(ucCamera);
+                    ucCamera.closeCamera();
+                }
+                ucCamera = null;
             }
+
         }
     }
 }

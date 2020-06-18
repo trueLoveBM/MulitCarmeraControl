@@ -50,6 +50,7 @@
             this.ctxRight.Name = "ctxRight";
             this.ctxRight.ShowCheckMargin = true;
             this.ctxRight.Size = new System.Drawing.Size(203, 136);
+            this.ctxRight.Opening += new System.ComponentModel.CancelEventHandler(this.ctxRight_Opening);
             // 
             // menuResolution
             // 

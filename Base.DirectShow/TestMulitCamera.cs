@@ -435,7 +435,7 @@ namespace Base.DirectShow
                 }
             }
 
-            return AvailableResolutions;
+            return AvailableResolutions.Distinct().ToList();
 
         }
 
@@ -1077,6 +1077,14 @@ namespace Base.DirectShow
         /// </summary>
         public void Dispose()
         {
+            if (VerStarPreview())
+            {
+                CameraEntity camera = new CameraEntity();
+                camera.Name = this._bindCameraName;
+                camera.Status = 0;
+                camera.Save();
+            }
+
             if (_mediaControl != null)
             {
                 _mediaControl.Stop();

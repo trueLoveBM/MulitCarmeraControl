@@ -178,7 +178,7 @@ namespace Base.DirectShow
 
             testMulitCamera.BindCamera(bindInfoEntity.CameraName);
             testMulitCamera.BindAudio(bindInfoEntity.AudioName);
-
+            testMulitCamera.BindInfoKey = Key;
             //分辨率不可调用
             //testMulitCamera.GetCameraSupportResolution();
             List<string> Resolution = GetCameraSupportResolution(bindInfoEntity.CameraName);

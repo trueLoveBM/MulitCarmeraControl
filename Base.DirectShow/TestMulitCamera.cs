@@ -30,9 +30,12 @@ namespace Base.DirectShow
         /// </summary>
         public string Camera { get { return this._bindCameraName; } }
 
+
         #endregion
 
         #region  字段
+        internal string BindInfoKey;
+
         /// <summary>
         /// 当前正在使用的摄像头名称
         /// </summary>
@@ -166,12 +169,28 @@ namespace Base.DirectShow
         /// <param name="CameraName"></param>
         public void BindCamera(string CameraName)
         {
+            var cameras = XmlHelper.XmlHelper.FindAll<CameraEntity>();
+            var oldc = cameras.Find(m => m.Name == this._bindCameraName);
+            oldc.Status = 0;
+            var newc = cameras.Find(m => m.Name == CameraName);
+            newc.Status = 1;
+            XmlHelper.XmlHelper.SaveList<CameraEntity>(cameras);
+
+
+            BindInfoEntity bindInfo = XmlHelper.XmlHelper.FindByPrimaryKey<BindInfoEntity>(this.BindInfoKey);
+            bindInfo.CameraName = CameraName;
+            //TODO
+            bindInfo.Save();
+
             this._bindCameraName = CameraName;
 
             if (VerStarPreview())
             {
                 this.Preview(this._priviewControlHandle, this._priviewControlWidth, this._priviewControlHeigh);
             }
+
+
+
         }
 
         /// <summary>

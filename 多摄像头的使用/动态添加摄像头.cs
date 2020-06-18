@@ -44,5 +44,23 @@ namespace 多摄像头的使用
             }
 
         }
+
+        private void 动态添加摄像头_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            foreach (UcCamera item in fpContent.Controls)
+            {
+                item.closeCamera();
+            }
+        }
+
+        private void btnRemoveCamera_Click(object sender, EventArgs e)
+        {
+            if (fpContent.Controls.Count > 0)
+            {
+                UcCamera uc = fpContent.Controls[fpContent.Controls.Count - 1] as UcCamera;
+                uc.closeCamera();
+                fpContent.Controls.Remove(uc);
+            }
+        }
     }
 }

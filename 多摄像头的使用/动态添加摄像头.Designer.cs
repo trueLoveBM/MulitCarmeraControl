@@ -31,11 +31,13 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnAdd = new System.Windows.Forms.Button();
             this.fpContent = new System.Windows.Forms.FlowLayoutPanel();
+            this.btnRemoveCamera = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.btnRemoveCamera);
             this.panel1.Controls.Add(this.btnAdd);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
@@ -61,6 +63,16 @@
             this.fpContent.Size = new System.Drawing.Size(1084, 535);
             this.fpContent.TabIndex = 1;
             // 
+            // btnRemoveCamera
+            // 
+            this.btnRemoveCamera.Location = new System.Drawing.Point(117, 7);
+            this.btnRemoveCamera.Name = "btnRemoveCamera";
+            this.btnRemoveCamera.Size = new System.Drawing.Size(108, 23);
+            this.btnRemoveCamera.TabIndex = 1;
+            this.btnRemoveCamera.Text = "移除摄像头";
+            this.btnRemoveCamera.UseVisualStyleBackColor = true;
+            this.btnRemoveCamera.Click += new System.EventHandler(this.btnRemoveCamera_Click);
+            // 
             // 动态添加摄像头
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -70,6 +82,7 @@
             this.Controls.Add(this.panel1);
             this.Name = "动态添加摄像头";
             this.Text = "动态添加摄像头";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.动态添加摄像头_FormClosing);
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -80,5 +93,6 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.FlowLayoutPanel fpContent;
+        private System.Windows.Forms.Button btnRemoveCamera;
     }
 }

@@ -71,6 +71,9 @@ namespace 多摄像头的使用
             List<CameraParamPlanEntity> settingPlans = _camera1.GetCameraParamPlans();
             cmbSettings.DataSource = settingPlans;
             cmbSettings.DisplayMember = nameof(CameraParamPlanEntity.ParamPlanName);
+            cmbSettings.SelectedIndexChanged -= cmbResolution_SelectedIndexChanged;
+            cmbSettings.SelectedItem = settingPlans.Find(m => m.DefaultSetting == true);
+            cmbSettings.SelectedIndexChanged += cmbResolution_SelectedIndexChanged;
         }
 
         private void 加载一个摄像头_FormClosing(object sender, FormClosingEventArgs e)
@@ -126,8 +129,22 @@ namespace 多摄像头的使用
         {
 
             FrmInputPlanName frm = new FrmInputPlanName(_camera1);
-            frm.ShowDialog();
+            if (frm.ShowDialog() != DialogResult.OK)
+                return;
+            //方案
+            List<CameraParamPlanEntity> settingPlans = _camera1.GetCameraParamPlans();
+            cmbSettings.DataSource = settingPlans;
+            cmbSettings.DisplayMember = nameof(CameraParamPlanEntity.ParamPlanName);
+            cmbSettings.SelectedIndexChanged -= cmbResolution_SelectedIndexChanged;
+            cmbSettings.SelectedItem = settingPlans.Find(m => m.DefaultSetting == true);
+            cmbSettings.SelectedIndexChanged += cmbResolution_SelectedIndexChanged;
 
+        }
+
+        private void cmbSettings_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (isLoaded)
+                _camera1.ChangeCameraConfigToSetting(cmbSettings.SelectedItem as CameraParamPlanEntity);
         }
     }
 }

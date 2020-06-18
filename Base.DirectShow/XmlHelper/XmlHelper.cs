@@ -62,7 +62,7 @@ namespace Base.DirectShow.XmlHelper
             return xmlEntityInfo;
         }
 
-        internal static XmlEntityInfo GetXmlEntityInfo(Type type) 
+        internal static XmlEntityInfo GetXmlEntityInfo(Type type)
         {
             if (XmlEntityInfoCache.ContainsKey(type.FullName))
             {
@@ -124,7 +124,7 @@ namespace Base.DirectShow.XmlHelper
             foreach (var item in tList)
             {
                 object ItemPrimaykey = xmlEntityInfo.PrimayKey.GetValue(item, null);
-                if(ItemPrimaykey.ToString()== PrimaryKey)
+                if (ItemPrimaykey.ToString() == PrimaryKey)
                 {
                     return item;
                 }
@@ -171,6 +171,12 @@ namespace Base.DirectShow.XmlHelper
                             {
                                 if (Int32.TryParse(propertyValue, out int intValue))
                                     ProertyInfo.SetValue(obj, intValue, null);
+                            }
+
+                            else if (ProertyInfo.PropertyType == typeof(bool))
+                            {
+                                if (bool.TryParse(propertyValue, out bool bValue))
+                                    ProertyInfo.SetValue(obj, bValue, null);
                             }
                             else
                                 ProertyInfo.SetValue(obj, propertyValue, null);

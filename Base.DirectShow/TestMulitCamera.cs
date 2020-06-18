@@ -252,6 +252,13 @@ namespace Base.DirectShow
             _priviewControlHeigh = PriviewControlHeight;
             SetVideoShow(_Resolution, _Frames);
 
+
+            var plan = GetCameraParamPlans();
+            if (plan == null)
+            {
+                SaveCameraConfigToSetting("默认", true);
+            }
+
             return StartRun();
         }
 
@@ -270,9 +277,6 @@ namespace Base.DirectShow
             }
             return StartRun();
         }
-
-
-
 
         /// <summary>
         /// 停止录制
@@ -659,7 +663,6 @@ namespace Base.DirectShow
             return iResult;
         }
 
-
         /// <summary>
         /// 获取当前摄像头的所有配置方案
         /// </summary>
@@ -667,6 +670,8 @@ namespace Base.DirectShow
         public List<CameraParamPlanEntity> GetCameraParamPlans()
         {
             List<CameraParamPlanEntity> plans = XmlHelper.XmlHelper.FindAll<CameraParamPlanEntity>();
+            if (plans == null)
+                return null;
             return plans.FindAll(m => m.CameraName == this._bindCameraName);
         }
         #endregion

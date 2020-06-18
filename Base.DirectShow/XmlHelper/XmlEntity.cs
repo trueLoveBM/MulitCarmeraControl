@@ -243,6 +243,11 @@ namespace Base.DirectShow.XmlHelper
                                 if (Int32.TryParse(propertyValue, out int intValue))
                                     ProertyInfo.SetValue(obj, intValue, null);
                             }
+                            else if(ProertyInfo.PropertyType == typeof(bool))
+                            {
+                                if (bool.TryParse(propertyValue, out bool bValue))
+                                    ProertyInfo.SetValue(obj, bValue, null);
+                            }
                             else
                                 ProertyInfo.SetValue(obj, propertyValue, null);
                         }

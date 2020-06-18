@@ -175,6 +175,7 @@
             this.cmbSettings.Name = "cmbSettings";
             this.cmbSettings.Size = new System.Drawing.Size(121, 20);
             this.cmbSettings.TabIndex = 9;
+            this.cmbSettings.SelectedIndexChanged += new System.EventHandler(this.cmbSettings_SelectedIndexChanged);
             // 
             // 加载一个摄像头
             // 

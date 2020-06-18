@@ -1,4 +1,5 @@
 ﻿using Base.DirectShow.Device;
+using Base.DirectShow.Entity;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +17,15 @@ namespace Base.DirectShow
 {
     public class TestMulitCamera : ISampleGrabberCB
     {
+
+        #region 只读属性
+
+        /// <summary>
+        /// 当前使用的分辨率
+        /// </summary>
+        public string Resolution { get { return this._Resolution; } }
+
+        #endregion
 
         #region  字段
         /// <summary>
@@ -59,14 +69,6 @@ namespace Base.DirectShow
         }
 
         private string _Resolution;
-        /// <summary>
-        /// 分辨率
-        /// </summary>
-        internal string Resolution
-        {
-            get { return _Resolution; }
-            set { _Resolution = value; }
-        }
 
         /// <summary>
         /// 图像
@@ -127,6 +129,13 @@ namespace Base.DirectShow
         //SetOutputFileName为我们创建图形的文件编写器部分，并返回mux和sink TODO
         IBaseFilter mux;
         IFileSinkFilter sink;
+
+
+        /// <summary>
+        ///  COM ISpecifyPropertyPages interface 
+        ///  摄像头配置页面
+        /// </summary>
+        protected ISpecifyPropertyPages specifyPropertyPages;
         #endregion
 
         #region APIs
@@ -164,6 +173,19 @@ namespace Base.DirectShow
             this._bindAudioName = AudioName;
         }
 
+        /// <summary>
+        /// 修改分辨率
+        /// </summary>
+        /// <param name="Resolution"></param>
+        public void SetResolution(string Resolution)
+        {
+            this._Resolution = Resolution;
+
+            if (VerStarPreview())
+            {
+                this.Preview(this._priviewControlHandle, this._priviewControlWidth, this._priviewControlHeigh);
+            }
+        }
         #endregion
 
         #region 接口实现
@@ -249,7 +271,7 @@ namespace Base.DirectShow
             return StartRun();
         }
 
-      
+
 
 
         /// <summary>
@@ -341,6 +363,7 @@ namespace Base.DirectShow
 
         /// <summary>
         /// 获取当前使用的摄像头支持的所有分辨率
+        /// 请在摄像头预览完成后调用此方法，否则请调用TestManager的GetCameraSupportResolution的方法
         /// </summary>
         /// <returns></returns>
         public List<string> GetCameraSupportResolution()
@@ -400,6 +423,251 @@ namespace Base.DirectShow
 
             return AvailableResolutions;
 
+        }
+
+        /// <summary>
+        /// 打开摄像头配置页面
+        /// 系统原生方式
+        /// </summary>
+        public void ChangeCameraSetting(IntPtr FrmHandle)
+        {
+            DsCAUUID cauuid = new DsCAUUID();
+            try
+            {
+                specifyPropertyPages = _theCamera as ISpecifyPropertyPages;
+                if (specifyPropertyPages == null)
+                {
+                    MessageBox.Show("请先打开视频设备！");
+                    return;
+                }
+                //返回filter所支持的属性页的CLSID
+                int hr = specifyPropertyPages.GetPages(out cauuid);
+                if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+
+                object o = specifyPropertyPages;
+                //获取属性页
+                hr = OleCreatePropertyFrame(FrmHandle, 30, 30, null, 1,
+                    ref o, cauuid.cElems, cauuid.pElems, 0, 0, IntPtr.Zero);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unable display property page. Please submit a bug report.\n\n" + ex.Message + "\n\n" + ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// 读取当前摄像头配置并保存到方案中
+        /// </summary>
+        /// <param name="VideoSettingName">当前配置的方案名</param>
+        /// <param name="AsDefault">是否设为摄像头默认设置</param>
+        public bool SaveCameraConfigToSetting(string VideoSettingName, bool AsDefault)
+        {
+            IAMVideoProcAmp videoProcAmp = _theCamera as IAMVideoProcAmp;
+            VideoProcAmpFlags flags = VideoProcAmpFlags.Manual;
+            //亮度值 0到255
+            int LightValue = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.Brightness, out LightValue, out flags);
+            //对比度 0到255
+            int ContrastValue = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.Contrast, out ContrastValue, out flags);
+            //饱和度 0到255 
+            int SaturationValue = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.Saturation, out SaturationValue, out flags);
+            //色调 -127 到127
+            int HueValue = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.Hue, out HueValue, out flags);
+            //清晰度 0到15
+            int SharpnessValue = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.Sharpness, out SharpnessValue, out flags);
+            //伽玛 1到8
+            int GammaValue = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.Gamma, out GammaValue, out flags);
+            //启用颜色 不支持
+            int ColorEnable = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.ColorEnable, out ColorEnable, out flags);
+            //白平衡 不支持
+            int WhiteBalanceValue = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.WhiteBalance, out WhiteBalanceValue, out flags);
+            //背光补偿 1 到 5
+            int BacklightCompensation = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.BacklightCompensation, out BacklightCompensation, out flags);
+            //增益 不支持
+            int Gain = 0;
+            videoProcAmp.Get(VideoProcAmpProperty.Gain, out Gain, out flags);
+
+            CameraParamPlanEntity setting = new CameraParamPlanEntity();
+            setting.PrimaryKey = Guid.NewGuid().ToString();
+            setting.CameraName = this._bindCameraName;
+            setting.Brightness = LightValue;
+            setting.ParamPlanName = VideoSettingName;
+            setting.ContrastRatio = ContrastValue;
+            setting.Saturation = SaturationValue;
+            setting.Hue = HueValue;
+            setting.Sharpness = SharpnessValue;
+            setting.Gamma = GammaValue;
+            setting.ColorEnable = Convert.ToBoolean(ColorEnable);
+            setting.WhiteBalance = WhiteBalanceValue;
+            setting.BacklightCompensation = BacklightCompensation;
+            setting.Gain = Gain;
+            setting.DefaultSetting = AsDefault;
+            setting.Save();
+
+            return true;
+        }
+
+        /// <summary>
+        /// 切换摄像头配置为指定配置方案
+        /// 配置方案可以由GetAllCameraSettings进行传参
+        /// </summary>
+        /// <param name="setting">摄像头配置方案</param>
+        /// <param name="asDefault">是否将此配置设为默认配置</param>
+        /// <returns></returns>
+        public int ChangeCameraConfigToSetting(CameraParamPlanEntity setting, bool asDefault = false)
+        {
+            if (asDefault)
+            {
+                List<CameraParamPlanEntity> list = XmlHelper.XmlHelper.FindAll<CameraParamPlanEntity>();
+                list.ForEach(m => m.DefaultSetting = false);
+                var oldPlan = list.Find(m => m.CameraName == this._bindCameraName && m.ParamPlanName == setting.ParamPlanName);
+                oldPlan.DefaultSetting = true;
+                XmlHelper.XmlHelper.SaveList<CameraParamPlanEntity>(list);
+            }
+
+            int iResult = 0;
+            IAMVideoProcAmp videoProcAmp = _theCamera as IAMVideoProcAmp;
+            if (videoProcAmp == null)
+            {
+                iResult = -1;
+                return iResult;
+            }
+            int val;
+            int min;
+            int max;
+            int step;
+            int defaultValue;
+            VideoProcAmpFlags flags = VideoProcAmpFlags.Manual;
+            // 设置亮度
+            if (setting.Brightness != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.Brightness, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Brightness, out val, out flags);
+                    //val = min + (max - min) * setting.Brightness / 255;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.Brightness, setting.Brightness, flags);
+                }
+            }
+            //设置对比度
+            if (setting.ContrastRatio != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.Contrast, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Contrast, out val, out flags);
+                    //val = min + (max - min) * setting.ContrastRatio / 100;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.Contrast, setting.ContrastRatio, flags);
+                }
+            }//设置饱和度
+            if (setting.Saturation != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.Saturation, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Saturation, out val, out flags);
+                    //val = min + (max - min) * setting.Saturation / 100;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.Saturation, setting.Saturation, flags);
+                }
+            }
+            //设置色调
+            if (setting.Hue != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.Hue, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Saturation, out val, out flags);
+                    //val = min + (max - min) * setting.Saturation / 100;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.Hue, setting.Hue, flags);
+                }
+            }
+            //设置清晰度
+            if (setting.Sharpness != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.Sharpness, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Saturation, out val, out flags);
+                    //val = min + (max - min) * setting.Saturation / 100;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.Sharpness, setting.Sharpness, flags);
+                }
+            }
+            //设置伽玛
+            if (setting.Gamma != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.Gamma, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Saturation, out val, out flags);
+                    //val = min + (max - min) * setting.Saturation / 100;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.Gamma, setting.Gamma, flags);
+                }
+            }
+            //设置启用颜色
+            if (setting.Gamma != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.ColorEnable, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Saturation, out val, out flags);
+                    //val = min + (max - min) * setting.Saturation / 100;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.ColorEnable, Convert.ToInt32(setting.ColorEnable), flags);
+                }
+            }
+            //白平衡
+            if (setting.WhiteBalance != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.WhiteBalance, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Saturation, out val, out flags);
+                    //val = min + (max - min) * setting.Saturation / 100;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.WhiteBalance, setting.WhiteBalance, flags);
+                }
+            }
+            //背光补偿
+            if (setting.WhiteBalance != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.BacklightCompensation, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Saturation, out val, out flags);
+                    //val = min + (max - min) * setting.Saturation / 100;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.BacklightCompensation, setting.BacklightCompensation, flags);
+                }
+            }
+            //增益
+            if (setting.Gain != -1)
+            {
+                int hr = videoProcAmp.GetRange(VideoProcAmpProperty.Gain, out min, out max, out step, out defaultValue, out flags);
+                if (0 == hr)
+                {
+                    //videoProcAmp.Get(VideoProcAmpProperty.Saturation, out val, out flags);
+                    //val = min + (max - min) * setting.Saturation / 100;
+                    iResult = videoProcAmp.Set(VideoProcAmpProperty.Gain, setting.Gain, flags);
+                }
+            }
+            return iResult;
+        }
+
+
+        /// <summary>
+        /// 获取当前摄像头的所有配置方案
+        /// </summary>
+        /// <returns></returns>
+        public List<CameraParamPlanEntity> GetCameraParamPlans()
+        {
+            List<CameraParamPlanEntity> plans = XmlHelper.XmlHelper.FindAll<CameraParamPlanEntity>();
+            return plans.FindAll(m => m.CameraName == this._bindCameraName);
         }
         #endregion
 

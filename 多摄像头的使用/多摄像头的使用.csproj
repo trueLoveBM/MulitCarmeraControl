@@ -13,7 +13,7 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -44,6 +44,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FrmInputPlanName.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmInputPlanName.Designer.cs">
+      <DependentUpon>FrmInputPlanName.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmVideoShower.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -64,6 +70,9 @@
     <Compile Include="加载两个摄像头.Designer.cs">
       <DependentUpon>加载两个摄像头.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="FrmInputPlanName.resx">
+      <DependentUpon>FrmInputPlanName.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmVideoShower.resx">
       <DependentUpon>FrmVideoShower.cs</DependentUpon>
     </EmbeddedResource>

@@ -19,6 +19,8 @@ namespace 多摄像头的使用
         TestMulitCamera _camera1;
 
         string _picture_save_dir = "D:\\Test";
+        bool isLoaded = false;
+
 
         public 加载一个摄像头()
         {
@@ -49,8 +51,26 @@ namespace 多摄像头的使用
             //_camera1 = new TestMulitCamera();
             //_camera1.BindCamera(_camera_1_name);
             //_camera1.BindAudio(_audio_1_name);
+            var cmaeraArray = TestManager.GetAllVideoDevice();
+
+            List<string> resulutions = TestManager.GetCameraSupportResolution(cmaeraArray.First().Name);
             _camera1 = TestManager.CreateCamera("key0");
             _camera1.Preview(pnlCamera.Handle, pnlCamera.Width, pnlCamera.Height);
+
+            //获取支持的分辨率
+            List<string> resolution = _camera1.GetCameraSupportResolution();
+            cmbResolution.DataSource = resolution;
+            cmbResolution.SelectedItem = _camera1.Resolution;
+
+            //展示相关参数
+            lblCameraParams.Text = string.Format("当前分辨率：{0}", _camera1.Resolution);
+
+            isLoaded = true;
+
+            //方案
+            List<CameraParamPlanEntity> settingPlans = _camera1.GetCameraParamPlans();
+            cmbSettings.DataSource = settingPlans;
+            cmbSettings.DisplayMember = nameof(CameraParamPlanEntity.ParamPlanName);
         }
 
         private void 加载一个摄像头_FormClosing(object sender, FormClosingEventArgs e)
@@ -89,6 +109,25 @@ namespace 多摄像头的使用
 
             btnStartVideo.Enabled = true;
             btnStopVideo.Enabled = false;
+        }
+
+        private void cmbResolution_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (isLoaded)
+                _camera1.SetResolution(cmbResolution.SelectedItem.ToString());
+        }
+
+        private void btnOleSetting_Click(object sender, EventArgs e)
+        {
+            _camera1.ChangeCameraSetting(this.Handle);
+        }
+
+        private void btnSavePlan_Click(object sender, EventArgs e)
+        {
+
+            FrmInputPlanName frm = new FrmInputPlanName(_camera1);
+            frm.ShowDialog();
+
         }
     }
 }

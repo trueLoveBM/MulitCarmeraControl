@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Base.DirectShow
@@ -145,7 +146,6 @@ namespace Base.DirectShow
                 {
                     //TODO 提醒是否更换摄像头或者音频设备
 
-
                     //TODO 现在默认替换摄像头
                     //找到一个可用的摄像头和可用的音频设备
                     if (BindCamera.Status == 3)
@@ -179,6 +179,11 @@ namespace Base.DirectShow
             testMulitCamera.BindCamera(bindInfoEntity.CameraName);
             testMulitCamera.BindAudio(bindInfoEntity.AudioName);
 
+            //分辨率不可调用
+            //testMulitCamera.GetCameraSupportResolution();
+            List<string> Resolution = GetCameraSupportResolution(bindInfoEntity.CameraName);
+            //默认使用最高的分辨率
+            testMulitCamera.SetResolution(Resolution.First());
             return testMulitCamera;
         }
 
@@ -283,6 +288,87 @@ namespace Base.DirectShow
                 XmlHelper.XmlHelper.SaveList<AudioEntity>(remindAudio);
             }
             #endregion
+        }
+
+        /// <summary>
+        /// 获取指定摄像头支持的分辨率
+        /// </summary>
+        /// <param name="CameraName">摄像头的名称</param>
+        /// <returns></returns>
+        public static List<string> GetCameraSupportResolution(string CameraName)
+        {
+            DsDevice[] dsVideoDevice = GetAllVideoDevice();
+            IBaseFilter theCamera = TestManager.CreateFilter(dsVideoDevice, CameraName);
+
+            IFilterGraph2 graphBuilder = (IFilterGraph2)new FilterGraph();// 获取IFilterGraph2接口对象
+            ICaptureGraphBuilder2 captureGraphBuilder = (ICaptureGraphBuilder2)new CaptureGraphBuilder2();//获取ICaptureGraphBuilder2接口对象
+            int hr = captureGraphBuilder.SetFiltergraph(graphBuilder);//将过滤器图形附加到捕获图
+            DsError.ThrowExceptionForHR(hr);
+            //将视频输入设备添加到图形
+            hr = graphBuilder.AddFilter(theCamera, "source filter");
+            DsError.ThrowExceptionForHR(hr);
+
+            //AMMediaType mediaType = new AMMediaType();
+            //IntPtr pmt = IntPtr.Zero;
+            //object oVideoStreamConfig;//视频流配置信息
+            //hr = captureGraphBuilder.FindInterface(PinCategory.Capture, MediaType.Video, theCamera, typeof(IAMStreamConfig).GUID, out oVideoStreamConfig);
+            //if (!(oVideoStreamConfig is IAMStreamConfig videoStreamConfig))
+            //{
+            //    throw new Exception("Failed to get IAMStreamConfig");
+            //}
+
+
+            List<string> AvailableResolutions = new List<string>();
+            object streamConfig;
+
+            // 获取配置接口
+            hr = captureGraphBuilder.FindInterface(PinCategory.Capture,
+                                            MediaType.Video,
+                                            theCamera,
+                                            typeof(IAMStreamConfig).GUID,
+                                            out streamConfig);
+
+            Marshal.ThrowExceptionForHR(hr);
+
+            var videoStreamConfig = streamConfig as IAMStreamConfig;
+
+
+            if (videoStreamConfig == null)
+            {
+                throw new Exception("Failed to get IAMStreamConfig");
+            }
+            var videoInfo = new VideoInfoHeader();
+            int iCount;
+            int iSize;
+            int bitCount = 0;
+            //IAMStreamConfig::GetNumberOfCapabilities获得设备所支持的媒体类型的数量。这个方法返回两个值，一个是媒体类型的数量，二是属性所需结构的大小。
+            hr = videoStreamConfig.GetNumberOfCapabilities(out iCount, out iSize);
+            Marshal.ThrowExceptionForHR(hr);
+            IntPtr TaskMemPointer = Marshal.AllocCoTaskMem(iSize);
+            AMMediaType pmtConfig = null;
+
+            for (int iFormat = 0; iFormat < iCount; iFormat++)
+            {
+                IntPtr ptr = IntPtr.Zero;
+                //通过函数IAMStreamConfig::GetStreamCaps来枚举媒体类型，要给这个函数传递一个序号作为参数，这个函数返回媒体类型和相应的属性结构体
+                videoStreamConfig.GetStreamCaps(iFormat, out ptr, TaskMemPointer);
+
+                pmtConfig = (AMMediaType)Marshal.PtrToStructure(ptr, typeof(AMMediaType));
+
+                videoInfo = (VideoInfoHeader)Marshal.PtrToStructure(pmtConfig.formatPtr, typeof(VideoInfoHeader));
+
+                if (videoInfo.BmiHeader.Size != 0 && videoInfo.BmiHeader.BitCount != 0)
+                {
+                    if (videoInfo.BmiHeader.BitCount > bitCount)
+                    {
+                        AvailableResolutions.Clear();
+                        bitCount = videoInfo.BmiHeader.BitCount;
+                    }
+                    AvailableResolutions.Add(videoInfo.BmiHeader.Width + "*" + videoInfo.BmiHeader.Height);
+                }
+            }
+
+            return AvailableResolutions;
         }
     }
 }

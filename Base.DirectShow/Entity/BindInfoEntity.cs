@@ -27,5 +27,15 @@ namespace Base.DirectShow.Entity
         /// 音频名称
         /// </summary>
         public string AudioName { get; set; }
+
+        /// <summary>
+        /// 使用的分辨率
+        /// </summary>
+        public string Resolution { get; set; }
+
+        /// <summary>
+        /// 使用的配置方案
+        /// </summary>
+        public string SettingName { get; set; }
     }
 }

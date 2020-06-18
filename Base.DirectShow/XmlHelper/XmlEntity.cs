@@ -33,6 +33,10 @@ namespace Base.DirectShow.XmlHelper
             //首先读取当前数据
             List<XmlEntity> result = findAll();
 
+            //校验
+            if (!ValidForAdd(result))
+                return;
+
             //判断当前数据中是否存在此数据，存在则更换此数据，不存在则追加至集合结尾
             object saveDataPrimaryKey = _EntityInfo.PrimayKey.GetValue(this, null);
 
@@ -258,5 +262,15 @@ namespace Base.DirectShow.XmlHelper
             #endregion
         }
 
+
+        /// <summary>
+        /// 数据增删时进行校验
+        /// </summary>
+        /// <param name="PropertyName">当前存储的数据</param>
+        /// <returns>true 表示校验通过，false表示校验不通过</returns>
+        protected virtual bool ValidForAdd(object CurrentDatas)
+        {
+            return true;
+        }
     }
 }

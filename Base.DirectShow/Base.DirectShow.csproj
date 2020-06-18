@@ -79,6 +79,7 @@
     <Compile Include="Entity\AudioEntity.cs" />
     <Compile Include="Entity\BindInfoEntity.cs" />
     <Compile Include="Entity\CameraEntity.cs" />
+    <Compile Include="Entity\CameraParamPlanEntity.cs" />
     <Compile Include="Entity\DeviceSecEntity.cs" />
     <Compile Include="Entity\VideoSettingEntity.cs" />
     <Compile Include="XmlHelper\XmlEntity.cs" />
